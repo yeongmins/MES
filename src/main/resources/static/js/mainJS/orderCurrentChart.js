@@ -20,7 +20,7 @@ function drawChart() {
         ['5', 'ROD34', '양배추즙', new Date(2023, 4, 21), new Date(2023, 4, 25), null, 60, null],
         ['6', 'ROD35', '흑마늘즙', new Date(2023, 4, 11), new Date(2023, 4, 15), null, 75, null],
         ['7', 'ROD36', '매실젤리스틱', new Date(2023, 4, 16), new Date(2023, 4, 20), null, 80, null],
-        ['8', 'ROD37', '석류젤리스틱', new Date(2023, 4, 21), new Date(2023, 5, 15), null, 60, null]
+        ['8', 'ROD37', '석류젤리스틱', new Date(2023, 4, 21), new Date(2023, 4, 25), null, 60, null]
     ]);
 
     var options = {
