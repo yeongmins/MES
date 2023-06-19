@@ -47,6 +47,10 @@ public interface RorderRepository extends JpaRepository<Rorder, String> {
     @Query("UPDATE Rorder r set r.state = '확정' WHERE r.id = :id")
     int updateState(@Param("id") String id);
 
+    //수주별 진행 현황
+    List<Rorder> findByStateOrderByIdDesc(String state);
 
+    @Query("SELECT r FROM Rorder r WHERE r.state = '확정' AND r.date <= CURRENT_TIMESTAMP ORDER BY r.id desc")
+    List<Rorder> findRordersByStateByConditions(String state);
 
 }

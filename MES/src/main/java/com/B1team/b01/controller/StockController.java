@@ -1,13 +1,20 @@
 package com.B1team.b01.controller;
 
+import com.B1team.b01.dto.StockListDto;
+import com.B1team.b01.entity.Product;
 import com.B1team.b01.service.ProductService;
 import com.B1team.b01.service.StockService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
 import javax.transaction.Transactional;
+import java.math.BigDecimal;
+import java.util.List;
 
 @Controller
 @Transactional

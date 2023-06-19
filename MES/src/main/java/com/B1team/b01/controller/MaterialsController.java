@@ -1,9 +1,11 @@
-package com.B1team.b01.controller;
+package com.B1team.b01.Controller;
 
 import com.B1team.b01.dto.*;
 import com.B1team.b01.repository.CustomerRepository;
 import com.B1team.b01.repository.MaterialsRepository;
+import com.B1team.b01.repository.ProductRepository;
 import com.B1team.b01.repository.StockRepository;
+import com.B1team.b01.service.MaterialsService;
 import com.B1team.b01.service.PinoutService;
 import com.B1team.b01.service.PorderService;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +14,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Controller

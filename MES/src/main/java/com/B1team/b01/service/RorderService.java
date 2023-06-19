@@ -1,16 +1,15 @@
 package com.B1team.b01.service;
 
 import com.B1team.b01.dto.LotDto;
+import com.B1team.b01.dto.OrderProductionStatusDto;
 import com.B1team.b01.dto.RorderDto;
 import com.B1team.b01.dto.RorderFormDto;
 import com.B1team.b01.entity.Finprod;
 import com.B1team.b01.entity.Rorder;
-import com.B1team.b01.entity.Worder;
 import com.B1team.b01.repository.LotRepository;
 import com.B1team.b01.repository.RorderRepository;
 import com.B1team.b01.repository.WorderRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
@@ -22,6 +21,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.ArrayList;
 
 @RequiredArgsConstructor
 @Service
@@ -56,34 +56,25 @@ public class RorderService {
 //            3 자동 발주 / 발주상세 자재 ,입출 정보 in - 수경님
 
 //            4 생산 지시, 로트번호, 생산계획, 실적, 완제품 insert -다인님
-                LocalDateTime materialReadyDate = rorder.getDate();
-                String productId = rorder.getProductId();
-                long orderCnt = rorder.getCnt();
-                String orderId = rorder.getId();
-                wplanService.createWplan(materialReadyDate, productId, orderCnt, orderId);  //작성계획 등록메소드
+        LocalDateTime materialReadyDate = rorder.getDate();
+        String productId = rorder.getProductId();
+        long orderCnt = rorder.getCnt();
+        String orderId = rorder.getId();
+        wplanService.createWplan(materialReadyDate, productId, orderCnt, orderId);  //작성계획 등록메소드
 
-                List<LotDto> lotDtoList = worderService.doWorder(orderId, materialReadyDate, productId, orderCnt);    //작업지시 등록메소드
+        List<LotDto> lotDtoList = worderService.doWorder(orderId, materialReadyDate, productId, orderCnt);    //작업지시 등록메소드
 
-                stockService.deleteStockEa(productId, orderCnt);//출고
-                pinoutService.createMTROut(orderId, productId);    //자재입출정보등록
-
-
-                wperformService.insertWperform(orderId);    //작업실적 등록
-                Finprod finprod = finprodService.insertFinprod(orderId);      //완제품 등록
-
-                for(LotDto lotDto : lotDtoList) {
-                    lotDto.setFinprodId(finprod.getId());
-                    lotRepository.save(lotDto.toEntity());
-                }
+        stockService.deleteStockEa(productId, orderCnt);//출고
+        pinoutService.createMTROut(orderId, productId);    //자재입출정보등록
 
 
+        wperformService.insertWperform(orderId);    //작업실적 등록
+        Finprod finprod = finprodService.insertFinprod(orderId);      //완제품 등록
 
-
-
-
-
-
-
+        for (LotDto lotDto : lotDtoList) {
+            lotDto.setFinprodId(finprod.getId());
+            lotRepository.save(lotDto.toEntity());
+        }
 
 
     }
@@ -94,7 +85,7 @@ public class RorderService {
         Rorder rorder = optional.get();
 
         //수주일이 현재 시간 보다 이전이면 지금 시간으로 수정
-        if(rorder.getDate().isBefore(LocalDateTime.now()))
+        if (rorder.getDate().isBefore(LocalDateTime.now()))
             rorder.setDate(LocalDateTime.now());
 
         //시뮬레이션 돌리기
@@ -110,13 +101,13 @@ public class RorderService {
     public List<RorderDto> searchRorder(String start, String end, String orderId, String state, String customerName, String productName, String startLine, String endLine) {
         //날짜 관련 변환
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDateTime startDate = start == null || "".equals(start)? null : LocalDate.parse(start, formatter).atStartOfDay();
+        LocalDateTime startDate = start == null || "".equals(start) ? null : LocalDate.parse(start, formatter).atStartOfDay();
         LocalDateTime endDate = end == null || "".equals(end) ? null : LocalDate.parse(end, formatter).atTime(23, 59, 59);
         LocalDateTime startDeadline = startLine == null || "".equals(startLine) ? null : LocalDate.parse(startLine, formatter).atStartOfDay();
         LocalDateTime endDeadLine = endLine == null || "".equals(endLine) ? null : LocalDate.parse(endLine, formatter).atTime(23, 59, 59);
 
         LocalDateTime now = null;
-        if(state != null && (state.equals("진행중") || state.equals("완료")))
+        if (state != null && (state.equals("진행중") || state.equals("완료")))
             now = LocalDateTime.now();
 
         List<Rorder> rorderList = rorderRepository.findRordersByConditions(startDate, endDate, orderId, state, now, customerName, productName, startDeadline, endDeadLine);
@@ -160,5 +151,14 @@ public class RorderService {
     public RorderDto findById(String rid) {
         Optional<Rorder> optional = rorderRepository.findById(rid);
         return RorderDto.of(optional.get());
+    }
+
+    //수주별 작업 현황
+    public List<OrderProductionStatusDto> getOrderProductionStatus() {
+        List<Rorder> rorders = rorderRepository.findRordersByStateByConditions("확정");
+        List<OrderProductionStatusDto> list = new ArrayList<>();
+        for (int i = 0; i < 8 && i < list.size(); i++)
+            list.add(OrderProductionStatusDto.of(rorders.get(i)));
+        return list;
     }
 }
